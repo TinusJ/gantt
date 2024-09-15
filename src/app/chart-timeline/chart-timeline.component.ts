@@ -216,11 +216,13 @@ export class ChartTimelineComponent implements OnInit {
     };
   }
 
+
   addGroup(): void {
-    if (this.newGroupName && !this.groups.includes(this.newGroupName)) {
-      this.groups.push(this.newGroupName);
+    const groupName = faker.company.name();
+
+    if (groupName && !this.groups.includes(groupName)) {
+      this.groups.push(groupName);
       this.updateChartData();
-      this.newGroupName = '';
       this.messageService.add({ severity: 'success', summary: 'Group Added', detail: 'New group added successfully!' });
     } else {
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Group already exists or name is invalid!' });
@@ -228,22 +230,30 @@ export class ChartTimelineComponent implements OnInit {
   }
 
   addEvent(): void {
-    if (this.newEventName && this.selectedGroup && this.newEventStart && this.newEventEnd) {
+
+    const randomGroup = faker.helpers.arrayElement(this.groups);
+
+    // Use faker.date.between with from and to arguments
+    const startDate = faker.date.between({ from: this.minDate, to: this.maxDate });
+
+    // Generate an end date that's at least 1 to 7 days after the start date
+    const endDate = faker.date.between({ from: startDate, to: addMonths(startDate, 1) });
+
+    const eventName = faker.commerce.productName();
+
+
+    if (eventName && randomGroup && startDate && endDate) {
       const newEvent = {
-        EventName: this.newEventName,
-        EventSource: this.selectedGroup,
-        Start: this.newEventStart,
-        End: this.newEventEnd
+        EventName: eventName,
+        EventSource: randomGroup,
+        Start: startDate,
+        End: endDate
       };
 
       // Ensure the new event is within the date range before adding
       if (newEvent.Start >= this.minDate && newEvent.End <= this.maxDate) {
         this.events.push(newEvent);
         this.updateChartData();
-        this.newEventName = '';
-        this.selectedGroup = '';
-        this.newEventStart = null;
-        this.newEventEnd = null;
         this.messageService.add({ severity: 'success', summary: 'Event Added', detail: 'New event added successfully!' });
       } else {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Event must be within the date range!' });
